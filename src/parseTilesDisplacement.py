@@ -18,7 +18,7 @@ def find_largest_displacement(originalTilesTxtPath, stitchedTilesTxtPath):
                         x, y = map(float, coordinates_str.split(','))
                         coordinates[tile_name] = (x, y)
         except FileNotFoundError:
-            print(f"File not found: {file_path}")
+            print("File not found: "+file_path)
         return coordinates
 
     originalTiles_coordinates = read_coordinates_from_file(originalTilesTxtPath)
