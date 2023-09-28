@@ -8,6 +8,7 @@ Created on Fri Sep  1 17:34:28 2023
 import subprocess
 import multiprocessing
 import os
+import csv
 from src.call_fiji import run_fiji_python_Stitching_macro, run_fiji_python_Downsampling_macro
 
 def find_files_with_name(root_dir, filename):
@@ -19,19 +20,21 @@ def find_files_with_name(root_dir, filename):
     return file_paths
 
 def concatenate_files_content(input_files, output_file):
-    with open(output_file, 'w') as outfile:
+    with open(output_file, mode='a', newline='') as file:
+        writer = csv.writer(file)
         for input_file in input_files:
             with open(input_file, 'r') as infile:
-                outfile.write(infile.read())
+                writer.writerow([infile.read()])
+            
             
 if __name__ == '__main__':
 
     root_directory = r"/net/zstore1/FIBSEM/Pedro_parker"
     output_folder = r"/net/zstore1/fibsem_data/A53T/Parker"
-    srcPath = os.path.join(os.getcwd(),"src")
+    currentDir = os.getcwd()
+    srcPath = os.path.join(currentDir,"src")
     target_filename = "0-0-1.dat"
     target_filename_downsampling = "0-0-0.tif"
-
 
     grid_size_x=2 
     grid_size_y=2
@@ -44,7 +47,7 @@ if __name__ == '__main__':
     # Specify the output folder for processed images
     #python_macro_path = os.path.join(srcPath,"hello.py")
     python_macroStitching_path = os.path.join(srcPath,"stitch_tiles.py")
-    python_macroDownsampling_path = os.path.join(srcPath,"downsampled_images.py")
+    python_macroDownsampling_path = os.path.join(srcPath,"downsample_images.py")
 
 
     # Create a multiprocessing pool to run Fiji in parallel
@@ -55,23 +58,28 @@ if __name__ == '__main__':
     #input_path = r"/net/zstore1/FIBSEM/Pedro_parker/M06/D18/Merlin-FIBdeSEMAna_23-06-18_000317_0-0-1.dat"
     #run_fiji_python_Stitching_macro(python_macroStitching_path,input_path, output_folder, grid_size_x, grid_size_y, tile_overlap, regression_threshold,max_avg_displacement_threshold,absolute_displacement_threshold)
 
-    with multiprocessing.Pool(processes=num_workers) as pool:
-        pool.starmap(run_fiji_python_Stitching_macro,[(python_macroStitching_path, input_path, output_folder, grid_size_x, grid_size_y, tile_overlap, regression_threshold,max_avg_displacement_threshold,absolute_displacement_threshold) for input_path in allFile_paths])
-        pool.close()
-        pool.join()
-
-
-    print ("--------------------------------------DOWNSAMPLING----------------------------------------------")
-    
-#""""""""""""" IF STITCHING IS DONE, COMMENT IT TO CONTINUE WITH THE DOWNSAMPLING TO DOUBLE CHECK WRONG STITCHED IMAGES -------------------------------------
-    csvDirectory = r"/net/zstore1/fibsem_data/A53T/Parker/Displacement_csvs/"
-    allCsvFiles_path = find_files_with_name(csvDirectory, ".csv")    
-    concatenate_files_content(allCsvFiles_path, os.path.join(csvDirectory,"concatenationAllDisplacements.csv")
-    #num_workers = 16 
-    ## DOWNSAMPLING THE STITCHED .TIFs
-    #allFile_pathsDownsampling = find_files_with_name(output_folder + "/StitchedRawImages", target_filename_downsampling)   
+    ''' 
     #with multiprocessing.Pool(processes=num_workers) as pool:
-    #    pool.starmap(run_fiji_python_Downsampling_macro,[(python_macroDownsampling_path, input_path, output_folder) for input_path in allFile_pathsDownsampling])
+    #    pool.starmap(run_fiji_python_Stitching_macro,[(python_macroStitching_path, input_path, output_folder, grid_size_x, grid_size_y, tile_overlap, regression_threshold,max_avg_displacement_threshold,absolute_displacement_threshold) for input_path in allFile_paths])
     #    pool.close()
     #    pool.join()
- 
+    
+    ##Concatenate all the calculated displacements during stitching
+    #csvDirectory = r"/net/zstore1/fibsem_data/A53T/Parker/Displacement_csvs/"
+    #allCsvFiles_path = find_files_with_name(csvDirectory, ".csv")
+    #concatenate_files_content(allCsvFiles_path, os.path.join(csvDirectory,"concatenationAllDisplacements.csv"))
+    '''
+    print("--------------------------------------DOWNSAMPLING----------------------------------------------")
+    
+    # IF STITCHING IS DONE, COMMENT IT TO CONTINUE WITH THE DOWNSAMPLING TO DOUBLE CHECK WRONG STITCHED IMAGES -------------------------------------
+
+    num_workers = 25 # with more than 25 workers cardona-gpu1 [all workers free] crashes
+    # DOWNSAMPLING THE STITCHED .TIFs
+    
+    #input_path=r"/net/zstore1/fibsem_data/A53T/Parker/StitchedRawImages/Merlin-FIBdeSEMAna_23-07-14_102444_0-0-0.tif"
+    #run_fiji_python_Downsampling_macro(python_macroDownsampling_path, input_path, output_folder)
+    allFile_pathsDownsampling = find_files_with_name(os.path.join(output_folder, "StitchedRawImages"), target_filename_downsampling)   
+    with multiprocessing.Pool(processes=num_workers) as pool:
+        pool.starmap(run_fiji_python_Downsampling_macro,[(python_macroDownsampling_path, input_path, output_folder) for input_path in allFile_pathsDownsampling])
+        pool.close()
+        pool.join()
