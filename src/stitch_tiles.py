@@ -5,7 +5,9 @@ import shutil
 #pathIsoViewGCaMP = "/lmb/home/pgg/ParkinsonConnectomics/IsoView-GCaMP/"
 #sys.path.append(pathIsoViewGCaMP)
 #from lib.io import readFIBSEMdat
-from parseTilesDisplacement import find_largest_displacement
+pathCalculateDisplacement = "/lmb/home/pgg/ParkinsonConnectomics/Stitching_EM/src/"
+sys.path.append(pathCalculateDisplacement)
+from calculate_displacement import find_largest_displacement
 
 # Extract command-line arguments
 #@String input_path
@@ -49,7 +51,6 @@ def open_datFiles_fijiOpener(file_path):
 	IJ.run(imp, "Next Slice [>]", "")
 	IJ.run(imp, "Delete Slice", "")
 
-
 	return imp, maxDisplayValue
 
 def process_and_save_tifFiles(file_paths, output_folder):
@@ -65,8 +66,6 @@ def process_and_save_tifFiles(file_paths, output_folder):
     for i, imp in enumerate(imp_list):
         imp.setDisplayRange(0,max_of_max)
         IJ.saveAs(imp,"Tiff",os.path.join(output_folder,"Tile_"+str(i+1)+".tif"))
-
-
 
 fileName = fileName[:-10]
 tempFolder = folderForTemporalSaving + "_" + fileName
@@ -88,7 +87,8 @@ process_and_save_tifFiles(file_paths,tempFolder)
 
 IJ.run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Right & Down                ] grid_size_x="+grid_size_x+" grid_size_y="+grid_size_y+" tile_overlap="+tile_overlap+" first_file_index_i=1 directory="+tempFolder+" file_names=Tile_{i}.tif output_textfile_name="+fileName + "_0-0-0.txt" + " fusion_method=[Linear Blending] regression_threshold="+regression_threshold+" max/avg_displacement_threshold="+max_avg_displacement_threshold+" absolute_displacement_threshold="+absolute_displacement_threshold+" compute_overlap subpixel_accuracy computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=["+tempFolder+"]");
 
-largest_displacement = find_largest_displacement(fileName + "_0-0-0.txt",fileName + "_0-0-0.registered.txt")
+print(os.path.join(tempFolder, fileName + "_0-0-0.txt"))
+largest_displacement = find_largest_displacement(os.path.join(tempFolder, fileName + "_0-0-0.txt"), os.path.join(tempFolder,fileName + "_0-0-0.registered.txt"))
 displacement_filename = os.path.join(folderToSaveCsvDispl, fileName + "_displacement.csv")
 with open(displacement_filename, "w") as file:
     file.write(fileName + " - Largest Displacement (pixels), " + str(largest_displacement))
@@ -98,7 +98,4 @@ shutil.rmtree(tempFolder)
 print(fileName + " successful")
 #IJ.run("Quit");
 os.system('kill %d' % os.getpid())
-
- 
-
     
