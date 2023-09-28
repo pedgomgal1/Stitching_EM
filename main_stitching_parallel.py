@@ -8,7 +8,7 @@ Created on Fri Sep  1 17:34:28 2023
 import subprocess
 import multiprocessing
 import os
-from src.callFiji import run_fiji_python_Stitching_macro, run_fiji_python_Downsampling_macro
+from src.call_fiji import run_fiji_python_Stitching_macro, run_fiji_python_Downsampling_macro
 
 def find_files_with_name(root_dir, filename):
     file_paths = []
@@ -43,8 +43,8 @@ if __name__ == '__main__':
 
     # Specify the output folder for processed images
     #python_macro_path = os.path.join(srcPath,"hello.py")
-    python_macroStitching_path = os.path.join(srcPath,"stitchROIs.py")
-    python_macroDownsampling_path = os.path.join(srcPath,"saveDownsampled_stitchedImages.py")
+    python_macroStitching_path = os.path.join(srcPath,"stitch_tiles.py")
+    python_macroDownsampling_path = os.path.join(srcPath,"downsampled_images.py")
 
 
     # Create a multiprocessing pool to run Fiji in parallel

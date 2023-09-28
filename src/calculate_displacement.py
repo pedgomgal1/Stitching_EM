@@ -39,5 +39,5 @@ def find_largest_displacement(originalTilesTxtPath, stitchedTilesTxtPath):
             if displacement > largest_displacement:
                 largest_displacement = displacement
                 
-            return largest_displacement
+    return largest_displacement
 
