@@ -25,10 +25,11 @@ def run_fiji_python_Stitching_macro(python_macro_path,input_path, output_folder,
 
     # Run Fiji with the specified command
     fileName = os.path.basename(input_path)
-    print("Stitching:", fileName[:-10])
+    
     try:
-        if not os.path.exists(output_folder + "/StitchedRawImages/" + fileName[:-5]+ "0.tif"):
-                 subprocess.run(command,stderr=subprocess.PIPE, stdout=subprocess.PIPE); #os.killpg(os.getpid(subp.pid),signal.SIGTERM)
+        if not os.path.exists(os.path.join(output_folder, "StitchedRawImages", fileName[:-5]+ "0.tif")):
+            print("Stitching:", fileName[:-10])
+            subprocess.run(command,stderr=subprocess.PIPE, stdout=subprocess.PIPE); #os.killpg(os.getpid(subp.pid),signal.SIGTERM)
 
     except subprocess.CalledProcessError as e:
         print("Error running the subprocess:")
@@ -50,6 +51,7 @@ def run_fiji_python_Downsampling_macro(python_macro_path,input_path, output_fold
 
     # Run Fiji with the specified command
     fileName = os.path.basename(input_path)
-    print("Downsampling:", fileName)
-
-    if os.path.exists(input_path): subprocess.run(command,stderr=subprocess.PIPE, stdout=subprocess.PIPE); #os.killpg(os.getpid(subp.pid),signal.SIGTERM)
+    if os.path.exists(input_path): 
+        if not os.path.exists(os.path.join(output_folder, "Downsampled_stitchedImgs", "Downsampled_" + fileName[:-5]+ "0.tif")):
+            print("Downsampling: " + fileName[:-5] + "0.tif")
+            subprocess.run(command,stderr=subprocess.PIPE, stdout=subprocess.PIPE); #os.killpg(os.getpid(subp.pid),signal.SIGTERM)
