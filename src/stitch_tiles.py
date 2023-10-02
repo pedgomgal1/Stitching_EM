@@ -5,8 +5,7 @@ import shutil
 #pathIsoViewGCaMP = "/lmb/home/pgg/ParkinsonConnectomics/IsoView-GCaMP/"
 #sys.path.append(pathIsoViewGCaMP)
 #from lib.io import readFIBSEMdat
-pathCalculateDisplacement = "/lmb/home/pgg/ParkinsonConnectomics/Stitching_EM/src/"
-sys.path.append(pathCalculateDisplacement)
+
 from calculate_displacement import find_largest_displacement
 
 # Extract command-line arguments
@@ -19,25 +18,17 @@ from calculate_displacement import find_largest_displacement
 #@String max_avg_displacement_threshold
 #@String absolute_displacement_threshold
 
-print(input_path)
-print(output_folder)
-
 rawfile = input_path
 path2save = output_folder
-
-
-#rawfile = r"/net/zstore1/FIBSEM/Pedro_parker/M06/D15/Merlin-FIBdeSEMAna_23-06-15_000153_0-0-1.dat"
-#path2save = r"/net/zstore1/fibsem_data/A53T/Parker"
 
 # Get the directory path
 raw_folder = os.path.dirname(rawfile)
 fileName = os.path.basename(rawfile)
-print(fileName)
 
 folderForTemporalSaving = os.path.join(path2save,"TemporalTiles")
 folderToSaveStitching = os.path.join(path2save,"StitchedRawImages")
 folderToSaveCsvDispl = os.path.join(path2save,"Displacement_csvs")
-# Function to process and save the file
+
 #def open_datFiles_customDatReader(file_path):
 #	imp = readFIBSEMdat(file_path, channel_index=0, asImagePlus=True, toUnsigned=True)[0]
 #	maxDisplayValue = int(imp.getDisplayRangeMax())
@@ -53,6 +44,7 @@ def open_datFiles_fijiOpener(file_path):
 
 	return imp, maxDisplayValue
 
+#Use the min and max setDisplayRange to match in all the tiles for not having a collage of tiles with different histograms.
 def process_and_save_tifFiles(file_paths, output_folder):
     imp_list=[]
     max_display_values=[]
@@ -69,6 +61,8 @@ def process_and_save_tifFiles(file_paths, output_folder):
 
 fileName = fileName[:-10]
 tempFolder = folderForTemporalSaving + "_" + fileName
+
+# Create folders to save results if they do not exist
 # Define the desired permission mode (0o777 for full permissions)
 permission_mode = 0o777
 print(tempFolder)
@@ -82,20 +76,20 @@ for row in range(int(grid_size_x)):
     for col in range(int(grid_size_y)):
         file_paths.append(os.path.join(raw_folder,fileName+"_0-"+str(row)+"-"+str(col)+".dat"))
 
-
 process_and_save_tifFiles(file_paths,tempFolder)
 
 IJ.run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Right & Down                ] grid_size_x="+grid_size_x+" grid_size_y="+grid_size_y+" tile_overlap="+tile_overlap+" first_file_index_i=1 directory="+tempFolder+" file_names=Tile_{i}.tif output_textfile_name="+fileName + "_0-0-0.txt" + " fusion_method=[Linear Blending] regression_threshold="+regression_threshold+" max/avg_displacement_threshold="+max_avg_displacement_threshold+" absolute_displacement_threshold="+absolute_displacement_threshold+" compute_overlap subpixel_accuracy computation_parameters=[Save computation time (but use more RAM)] image_output=[Write to disk] output_directory=["+tempFolder+"]");
 
-print(os.path.join(tempFolder, fileName + "_0-0-0.txt"))
 largest_displacement = find_largest_displacement(os.path.join(tempFolder, fileName + "_0-0-0.txt"), os.path.join(tempFolder,fileName + "_0-0-0.registered.txt"))
+
+#write as csv the largest displacement found during stitching the tiles
 displacement_filename = os.path.join(folderToSaveCsvDispl, fileName + "_displacement.csv")
 with open(displacement_filename, "w") as file:
     file.write(fileName + " - Largest Displacement (pixels), " + str(largest_displacement))
 
 shutil.move(os.path.join(tempFolder,"img_t1_z1_c1"), os.path.join(folderToSaveStitching,fileName + "_0-0-0.tif"))
 shutil.rmtree(tempFolder)
-print(fileName + " successful")
+print(fileName + " stitched")
 #IJ.run("Quit");
 os.system('kill %d' % os.getpid())
     
