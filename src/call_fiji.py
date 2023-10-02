@@ -13,7 +13,7 @@ import signal
 def run_fiji_python_Stitching_macro(python_macro_path,input_path, output_folder,grid_size_x,grid_size_y,tile_overlap, regression_threshold,max_avg_displacement_threshold,absolute_displacement_threshold):
     # Construct the command to run Fiji in headless mode with the Python macro
     inputInstruction = 'input_path="'+input_path+'", output_folder="'+output_folder+'", grid_size_x="'+str(grid_size_x)+'", grid_size_y="'+str(grid_size_y)+'", tile_overlap="'+str(tile_overlap)+'", regression_threshold="'+str(regression_threshold)+'", max_avg_displacement_threshold="'+str(max_avg_displacement_threshold)+'", absolute_displacement_threshold="'+str(absolute_displacement_threshold)+'"'
-    print(inputInstruction)
+    #print(inputInstruction)
     command = [
         r'/lmb/home/pgg/Fiji.app/ImageJ-linux64',  # Adjust the path to your Fiji installation
         '--ij2',
@@ -27,9 +27,9 @@ def run_fiji_python_Stitching_macro(python_macro_path,input_path, output_folder,
     fileName = os.path.basename(input_path)
     
     try:
-        if not os.path.exists(os.path.join(output_folder, "StitchedRawImages", fileName[:-5]+ "0.tif")):
-            print("Stitching:", fileName[:-10])
-            subprocess.run(command,stderr=subprocess.PIPE, stdout=subprocess.PIPE); #os.killpg(os.getpid(subp.pid),signal.SIGTERM)
+        if not os.path.exists(os.path.join(output_folder, "StitchedRawImages", fileName[:-5]+ "0.tif"):
+             print("Stitching:", fileName[:-10])  
+             subprocess.run(command,stderr=subprocess.PIPE, stdout=subprocess.PIPE); #os.killpg(os.getpid(subp.pid),signal.SIGTERM)
 
     except subprocess.CalledProcessError as e:
         print("Error running the subprocess:")
@@ -51,7 +51,29 @@ def run_fiji_python_Downsampling_macro(python_macro_path,input_path, output_fold
 
     # Run Fiji with the specified command
     fileName = os.path.basename(input_path)
+    
     if os.path.exists(input_path): 
         if not os.path.exists(os.path.join(output_folder, "Downsampled_stitchedImgs", "Downsampled_" + fileName[:-5]+ "0.tif")):
-            print("Downsampling: " + fileName[:-5] + "0.tif")
+            print("Downsampling:", fileName)
+            subprocess.run(command,stderr=subprocess.PIPE, stdout=subprocess.PIPE); #os.killpg(os.getpid(subp.pid),signal.SIGTERM)
+
+def run_fiji_saveDatFilesAsTiffs(python_macro_path,input_path, output_folder):
+    # Construct the command to run Fiji in headless mode with the Python macro
+    inputInstruction = 'input_path="'+input_path+'", output_folder="'+output_folder+'"'
+    #print(inputInstruction)
+    command = [
+        r'/lmb/home/pgg/Fiji.app/ImageJ-linux64',  # Adjust the path to your Fiji installation
+        '--ij2',
+        '--headless',  # Run in headless mode
+        #'--console',
+        '--run', python_macro_path,  # Path to your Python macro
+        inputInstruction # Pass inputs as a parameters
+    ]
+
+    # Run Fiji with the specified command
+    fileName = os.path.basename(input_path)
+    
+    if os.path.exists(input_path): 
+        if not os.path.exists(os.path.join(output_folder, "NonTiledImgs", fileName[:-5]+ "0.tif")):
+            print("Saving - "+ fileName + " as .tif")
             subprocess.run(command,stderr=subprocess.PIPE, stdout=subprocess.PIPE); #os.killpg(os.getpid(subp.pid),signal.SIGTERM)
